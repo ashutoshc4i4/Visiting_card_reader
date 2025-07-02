@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visiting Card Scanner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('/static/green_theme.jpg') center center/cover no-repeat;
+            min-height: 100vh;
+        }
+
+        /* Add background image for the full page when upload section is visible */
+        body.upload-bg {
+            background: url('{{ url_for('static', filename='green_theme.jpg') }}') center center/cover no-repeat;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: box-shadow 0.3s, background 0.3s;
+        }
+        .navbar:hover {
+            box-shadow: 0 4px 32px rgba(102,126,234,0.18);
+        }
+        .navbar .navbar-brand span {
+            transition: color 0.3s;
+        }
+        .navbar .navbar-brand span:hover {
+            color: #764ba2;
+        }
+        .navbar-nav .nav-link {
+            color: #667eea;
+            font-weight: 500;
+            border-radius: 20px;
+            transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+            padding: 8px 18px;
+            margin: 0 4px;
+        }
+        .navbar-nav .nav-link.active, .navbar-nav .nav-link:focus {
+            background: #667eea;
+            color: #fff !important;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.12);
+        }
+        .navbar-nav .nav-link:hover {
+            background: #f0f2ff;
+            color: #764ba2 !important;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.10);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #ff7675 100%);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 20px;
+            padding: 8px 22px;
+            transition: background 0.3s, box-shadow 0.3s;
+            box-shadow: 0 2px 8px rgba(220,53,69,0.10);
+        }
+        .btn-danger:hover, .btn-danger:focus {
+            background: linear-gradient(135deg, #b71c1c 0%, #ff7675 100%);
+            box-shadow: 0 4px 16px rgba(220,53,69,0.18);
+            color: #fff;
+        }
+        .navbar-toggler {
+            border-radius: 10px;
+            border: 1.5px solid #667eea;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .navbar-toggler:hover, .navbar-toggler:focus {
+            border-color: #764ba2;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.12);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-tab {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background: transparent;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .nav-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-tab:hover {
+            background: #f0f2ff;
+            color: #667eea;
+        }
+
+        .nav-tab.active:hover {
+            background: #5a6fd8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: rgba(255,255,255,0.6);
+            border-radius: 28px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.18), 0 2px 12px rgba(102,126,234,0.10);
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+            padding: 0;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.6) !important;
+            backdrop-filter: blur(6px);
+            color: #333 !important;
+            padding: 40px;
+            text-align: center;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            background: none !important;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            margin-bottom: 40px;
+            min-height: 400px;
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .upload-section::before {
+            content: none !important;
+        }
+
+        .upload-area {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(102,126,234,0.3);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 0 12px rgba(102,126,234,0.15);
+            border-radius: 15px;
+            padding: 60px 20px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ecff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .camera-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            margin-left: 10px;
+        }
+
+        .camera-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .camera-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .camera-section {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .camera-container {
+            position: relative;
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .camera-video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .capture-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .capture-btn:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .cancel-camera-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .cancel-camera-btn:hover {
+            background: #5a6268;
+        }
+
+        .captured-image {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            border-radius: 15px;
+            margin: 20px auto;
+            display: block;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 6px solid #667eea;
+            border-top: 6px solid transparent;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+            box-shadow: 0 0 12px rgba(102,126,234,0.4);
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 40px;
+        }
+
+        .result-card {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .success-badge {
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .error-badge {
+            background: #dc3545;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .result-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .cards-section {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card-item {
+            background: rgba(255,255,255,0.08);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            border-radius: 16px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .card-item::before {
+            content: "";
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            z-index: -1;
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            border-radius: inherit;
+        }
+
+        .card-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .card-company {
+            color: #667eea;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .card-details {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .card-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .edit-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 1px 6px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            background: #5a6fd8;
+            transform: scale(1.05);
+        }
+
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+                padding: 20px;
+            }
+        }
+
+        table.table {
+            font-size: 0.92rem;
+        }
+        table.table th {
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-align: center;
+            background: #e9f0fb;
+            color: #334e6f;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+        table.table td {
+            vertical-align: middle;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(102,126,234,0.05);
+            box-shadow: inset 0 0 10px rgba(102,126,234,0.2);
+        }
+
+        .btn.btn-sm.btn-primary {
+            padding: 2px 10px;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm mb-4">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2" href="#" onclick="showSection('upload', event); setActiveNav('uploadNav'); return false;">
+          <img src="{{ url_for('static', filename='c4i4-logo.png') }}" alt="C4i4 Lab Logo" style="max-height: 38px; width: auto; object-fit: contain;">
+          <span>📇 Card Scanner</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" id="uploadNav" href="#" onclick="showSection('upload', event); setActiveNav('uploadNav')">Upload</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="cardsNav" href="#" onclick="showSection('cards', event); setActiveNav('cardsNav')">All Cards</a>
+            </li>
+            {% if session['user'] and session['user'] != 'c4i4.lab@c4i4.com' %}
+            <li class="nav-item">
+              <a class="nav-link" id="personalCardsNav" href="#" onclick="showSection('personalCards', event); setActiveNav('personalCardsNav')">Personal Cards</a>
+            </li>
+            {% endif %}
+          </ul>
+          <a href="/logout" class="btn btn-danger ms-lg-3">Sign Out</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>📇 Visiting Card Scanner</h1>
+            
+        </div>
+
+        <div class="main-content">
+            <!-- Upload Section -->
+            <div id="uploadSection" class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Drag & Drop your visiting card image here</div>
+                    <div class="upload-hint">or click to browse (JPG, JPEG, PNG)</div>
+                    <input type="file" id="fileInput" class="file-input" accept=".jpg,.jpeg,.png">
+                </div>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    <button class="upload-btn" id="uploadBtn" disabled>Upload & Extract Details</button>
+                    <button type="button" class="camera-btn" id="cameraBtn">📷 Take Photo</button>
+                </div>
+            </div>
+
+            <!-- Camera Section -->
+            <div id="cameraSection" class="camera-section" style="display: none;">
+                <div class="camera-container">
+                    <video id="cameraVideo" class="camera-video" autoplay playsinline></video>
+                    <div id="cameraOverlay" class="camera-overlay">
+                        <div>Click "Start Camera" to begin</div>
+                    </div>
+                </div>
+                <div class="camera-controls">
+                    <button class="capture-btn" id="startCameraBtn">🎥 Start Camera</button>
+                    <button class="capture-btn" id="captureBtn" style="display: none;">📸 Capture Photo</button>
+                    <button class="cancel-camera-btn" id="cancelCameraBtn">❌ Cancel</button>
+                </div>
+                <img id="capturedImage" class="captured-image" style="display: none;">
+                <button class="upload-btn" id="uploadCapturedBtn" style="display: none; margin-top: 20px;">Upload Captured Photo</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                
+            </div>
+
+            <div class="result-section" id="resultSection"></div>
+
+            <!-- Cards Section -->
+            <div id="cardsSection" class="cards-section" style="display: none;">
+                <h2 class="section-title">📋 All Scanned Cards</h2>
+                <div class="mb-3" style="max-width: 350px; margin: 0 auto;">
+                    <input type="text" id="cardSearchInput" class="form-control form-control-sm" placeholder="Search cards..." oninput="filterCardsTable()">
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-bordered table-sm align-middle" id="cardsTable" style="font-size: 0.92rem;">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Company</th>
+                                <th scope="col">Designation</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Phone</th>
+                                <th scope="col">Website</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">Additional Info</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cardsTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-center gap-2 my-3">
+                    <button class="btn btn-outline-primary btn-sm" onclick="exportTableToCSV()">Export CSV</button>
+                    <button class="btn btn-outline-success btn-sm" onclick="exportTableToExcel()">Export Excel</button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="exportTableToPDF()">Export PDF</button>
+                </div>
+            </div>
+            {% if session['user'] and session['user'] != 'c4i4.lab@c4i4.com' %}
+            <!-- Personal Cards Section -->
+            <div id="personalCardsSection" class="cards-section" style="display: none;">
+                <h2 class="section-title">👤 My Personal Cards</h2>
+                <div class="mb-3" style="max-width: 350px; margin: 0 auto;">
+                    <input type="text" id="personalCardSearchInput" class="form-control form-control-sm" placeholder="Search personal cards..." oninput="filterPersonalCardsTable()">
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-bordered table-sm align-middle" id="personalCardsTable" style="font-size: 0.92rem;">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Company</th>
+                                <th scope="col">Designation</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Phone</th>
+                                <th scope="col">Website</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">Additional Info</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="personalCardsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h3 class="modal-title">Edit Card Details</h3>
+            <form id="editForm">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-input" id="editName" name="name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Company</label>
+                    <input type="text" class="form-input" id="editCompany" name="company">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Designation</label>
+                    <input type="text" class="form-input" id="editDesignation" name="designation">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="editEmail" name="email">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" class="form-input" id="editPhone" name="phone">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Address</label>
+                    <input type="text" class="form-input" id="editAddress" name="address">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Website</label>
+                    <input type="url" class="form-input" id="editWebsite" name="website">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Additional Info</label>
+                    <input type="text" class="form-input" id="editAdditionalInfo" name="additional_info">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-danger" onclick="deleteCard()">Delete Card</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const loading = document.getElementById('loading');
+        const resultSection = document.getElementById('resultSection');
+        const cardsGrid = document.getElementById('cardsGrid');
+        const editModal = document.getElementById('editModal');
+        const editForm = document.getElementById('editForm');
+        
+        // Camera elements
+        const cameraBtn = document.getElementById('cameraBtn');
+        const cameraSection = document.getElementById('cameraSection');
+        const cameraVideo = document.getElementById('cameraVideo');
+        const cameraOverlay = document.getElementById('cameraOverlay');
+        const startCameraBtn = document.getElementById('startCameraBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const cancelCameraBtn = document.getElementById('cancelCameraBtn');
+        const capturedImage = document.getElementById('capturedImage');
+        const uploadCapturedBtn = document.getElementById('uploadCapturedBtn');
+        
+        let allCards = [];
+        let personalCards = [];
+        let currentEditId = null;
+        let stream = null;
+        let capturedImageData = null;
+        let lastExtractedCard = null;
+
+        // Navigation
+        function showSection(section, evt) {
+            const uploadSection = document.getElementById('uploadSection');
+            const cameraSection = document.getElementById('cameraSection');
+            const cardsSection = document.getElementById('cardsSection');
+            const personalCardsSection = document.getElementById('personalCardsSection');
+            const resultSection = document.getElementById('resultSection');
+            const tabs = document.querySelectorAll('.nav-tab, .nav-link');
+            // Only update tab highlighting if evt is present
+            if (evt && evt.target && evt.target.classList.contains('nav-link')) {
+                tabs.forEach(tab => tab.classList.remove('active'));
+                evt.target.classList.add('active');
+            } else {
+                // On page load, highlight the correct tab
+                tabs.forEach(tab => tab.classList.remove('active'));
+                if (section === 'upload') {
+                    document.getElementById('uploadNav').classList.add('active');
+                } else if (section === 'personalCards' && personalCardsSection) {
+                    document.getElementById('personalCardsNav').classList.add('active');
+                } else {
+                    document.getElementById('cardsNav').classList.add('active');
+                }
+            }
+            // Hide all sections first
+            uploadSection.style.display = 'none';
+            cameraSection.style.display = 'none';
+            cardsSection.style.display = 'none';
+            if (personalCardsSection) personalCardsSection.style.display = 'none';
+
+            if (section === 'upload') {
+                uploadSection.style.display = 'block';
+                // Hide personal cards section in upload
+                if (personalCardsSection) personalCardsSection.style.display = 'none';
+                if (resultSection.innerHTML.trim() !== '') {
+                    resultSection.style.display = 'block';
+                } else {
+                    resultSection.style.display = 'none';
+                }
+                document.body.classList.add('upload-bg');
+                document.body.classList.remove('upload-bg');
+            } else if (section === 'personalCards' && personalCardsSection) {
+                personalCardsSection.style.display = 'block';
+                loadPersonalCards();
+                document.body.classList.remove('upload-bg');
+            } else {
+                cardsSection.style.display = 'block';
+                loadCards();
+                resultSection.style.display = 'none';
+                document.body.classList.remove('upload-bg');
+            }
+            localStorage.setItem('selectedSection', section);
+        }
+
+        // On page load
+        window.onload = function() {
+            const lastSection = localStorage.getItem('selectedSection') || 'upload';
+            showSection(lastSection);
+        };
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                uploadBtn.disabled = false;
+            }
+        });
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                uploadBtn.disabled = false;
+            }
+        });
+
+        uploadBtn.addEventListener('click', async () => {
+            if (fileInput.files.length === 0) return;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            // Show loading
+            loading.style.display = 'block';
+            resultSection.style.display = 'none';
+            uploadBtn.disabled = true;
+
+            try {
+                const response = await fetch('/upload?extract_only=1', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (result.success) {
+                    lastExtractedCard = result.data;
+                    showSavePrompt(result.data);
+                } else {
+                    showResult(null, false, result.error);
+                }
+            } catch (error) {
+                showResult(null, false, 'Network error: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+                uploadBtn.disabled = false;
+                fileInput.value = '';
+            }
+        });
+
+        function showSavePrompt(data) {
+            const uploadSection = document.getElementById('uploadSection');
+            if (uploadSection && uploadSection.style.display === 'block') {
+                resultSection.style.display = 'block';
+                resultSection.innerHTML = `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <span class="success-badge">Card scanned successfully!</span>
+                        </div>
+                        <div class="result-grid">
+                            ${Object.entries(data).map(([key, value]) => {
+                                if (key === '_id' || key === 'uploaded_at' || key === 'original_filename') return '';
+                                return `
+                                    <div class="result-item">
+                                        <div class="result-label">${key.replace('_', ' ').toUpperCase()}</div>
+                                        <div class="result-value">${value || 'Not found'}</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        <div style="margin-top: 20px; text-align: right;">
+                            <button class="btn btn-success" onclick="saveExtractedCard()">Save Card</button>
+                            <button class="btn btn-danger" onclick="removeExtractedCard()">Remove Card</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        async function saveExtractedCard() {
+            if (!lastExtractedCard) return;
+            loading.style.display = 'block';
+            resultSection.style.display = 'none';
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(lastExtractedCard)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showResult(result.data, true, result.message);
+                    loadCards();
+                } else {
+                    showResult(null, false, result.error);
+                }
+            } catch (error) {
+                showResult(null, false, 'Network error: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+                lastExtractedCard = null;
+            }
+        }
+
+        function removeExtractedCard() {
+            resultSection.style.display = 'none';
+            resultSection.innerHTML = '';
+            lastExtractedCard = null;
+        }
+
+        function showResult(data, isSuccess, message) {
+            const uploadSection = document.getElementById('uploadSection');
+            if (isSuccess) {
+                // Only show result if Upload section is visible
+                if (uploadSection && uploadSection.style.display === 'block') {
+                    resultSection.style.display = 'block';
+                    resultSection.innerHTML = `
+                        <div class="result-card">
+                            <div class="result-header">
+                                <span class="success-badge">Card scanned successfully!</span>
+                            </div>
+                            <div class="result-grid">
+                                ${Object.entries(data).map(([key, value]) => {
+                                    if (key === '_id' || key === 'uploaded_at' || key === 'original_filename') return '';
+                                    return `
+                                        <div class="result-item">
+                                            <div class="result-label">${key.replace('_', ' ').toUpperCase()}</div>
+                                            <div class="result-value">${value || 'Not found'}</div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultSection.style.display = 'none';
+                    resultSection.innerHTML = '';
+                }
+            } else {
+                resultSection.style.display = 'block';
+                resultSection.innerHTML = `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <h3>❌ Error</h3>
+                            <span class="error-badge">Failed</span>
+                        </div>
+                        <p style="color: #dc3545; font-size: 1.1rem;">${message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Camera functionality
+        cameraBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (document.getElementById('uploadSection').style.display === 'block') {
+                document.getElementById('uploadSection').style.display = 'none';
+                document.getElementById('cameraSection').style.display = 'block';
+                // Do NOT start the camera automatically here
+                // The user must click 'Start Camera' to begin
+            }
+        });
+
+        startCameraBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                cameraVideo.srcObject = stream;
+                cameraOverlay.style.display = 'none';
+                startCameraBtn.style.display = 'none';
+                captureBtn.style.display = 'inline-block';
+            } catch (error) {
+                alert('Error accessing camera: ' + error.message);
+            }
+        });
+
+        captureBtn.addEventListener('click', () => {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = cameraVideo.videoWidth;
+            canvas.height = cameraVideo.videoHeight;
+            context.drawImage(cameraVideo, 0, 0);
+            
+            capturedImageData = canvas.toDataURL('image/jpeg', 0.8);
+            capturedImage.src = capturedImageData;
+            capturedImage.style.display = 'block';
+            uploadCapturedBtn.style.display = 'inline-block';
+            
+            // Stop camera stream
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            cameraVideo.style.display = 'none';
+            captureBtn.style.display = 'none';
+        });
+
+        cancelCameraBtn.addEventListener('click', () => {
+            document.getElementById('uploadSection').style.display = 'block';
+            document.getElementById('cameraSection').style.display = 'none';
+        });
+
+        uploadCapturedBtn.addEventListener('click', async () => {
+            if (!capturedImageData) return;
+
+            // Convert base64 to blob
+            const response = await fetch(capturedImageData);
+            const blob = await response.blob();
+            
+            const formData = new FormData();
+            formData.append('file', blob, 'captured_photo.jpg');
+
+            // Show loading
+            loading.style.display = 'block';
+            resultSection.style.display = 'none';
+            uploadCapturedBtn.disabled = true;
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showResult(result.data, true, result.message);
+                    loadCards(); // Refresh the cards list
+                    resetCamera();
+                    document.getElementById('uploadSection').style.display = 'block';
+                    document.getElementById('cameraSection').style.display = 'none';
+                } else {
+                    showResult(null, false, result.error);
+                }
+            } catch (error) {
+                showResult(null, false, 'Network error: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+                uploadCapturedBtn.disabled = false;
+            }
+        });
+
+        function resetCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            cameraVideo.srcObject = null;
+            cameraVideo.style.display = 'block';
+            cameraOverlay.style.display = 'flex';
+            startCameraBtn.style.display = 'inline-block';
+            captureBtn.style.display = 'none';
+            capturedImage.style.display = 'none';
+            uploadCapturedBtn.style.display = 'none';
+            capturedImageData = null;
+        }
+
+        async function loadCards() {
+            try {
+                const response = await fetch('/cards');
+                const result = await response.json();
+
+                if (result.success) {
+                    allCards = result.cards;
+                    displayCards(allCards);
+                } else {
+                    cardsGrid.innerHTML = '<p style="color: #dc3545;">Failed to load cards</p>';
+                }
+            } catch (error) {
+                cardsGrid.innerHTML = '<p style="color: #dc3545;">Network error loading cards</p>';
+            }
+        }
+
+        function displayCards(cards) {
+            const tableBody = document.getElementById('cardsTableBody');
+            if (!tableBody) return;
+            if (cards.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No cards found</td></tr>';
+                return;
+            }
+            tableBody.innerHTML = cards.map(card => `
+                <tr>
+                    <td>${card.name || ''}</td>
+                    <td>${card.company || ''}</td>
+                    <td>${card.designation || ''}</td>
+                    <td>${card.email || ''}</td>
+                    <td>${card.phone || ''}</td>
+                    <td>${card.website || ''}</td>
+                    <td>${card.address || ''}</td>
+                    <td>${card.additional_info || ''}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="openEditModal('${card._id}')">Edit</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Edit Modal Functions
+        function openEditModal(cardId) {
+            let card = allCards.find(c => c._id === cardId);
+            if (!card && personalCards && Array.isArray(personalCards)) {
+                card = personalCards.find(c => c._id === cardId);
+            }
+            if (!card) return;
+            currentEditId = cardId;
+            // Populate form fields
+            document.getElementById('editName').value = card.name || '';
+            document.getElementById('editCompany').value = card.company || '';
+            document.getElementById('editDesignation').value = card.designation || '';
+            document.getElementById('editEmail').value = card.email || '';
+            document.getElementById('editPhone').value = card.phone || '';
+            document.getElementById('editAddress').value = card.address || '';
+            document.getElementById('editWebsite').value = card.website || '';
+            document.getElementById('editAdditionalInfo').value = card.additional_info || '';
+            editModal.style.display = 'block';
+        }
+
+        function closeEditModal() {
+            editModal.style.display = 'none';
+            currentEditId = null;
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target === editModal) {
+                closeEditModal();
+            }
+        }
+
+        // Handle form submission
+        editForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentEditId) return;
+            
+            const formData = new FormData(this);
+            const updateData = {};
+            
+            for (let [key, value] of formData.entries()) {
+                updateData[key] = value || null;
+            }
+            
+            try {
+                const response = await fetch(`/update_card/${currentEditId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    closeEditModal();
+                    loadCards(); // Refresh the cards list
+                    alert('Card updated successfully!');
+                } else {
+                    alert('Failed to update card: ' + result.error);
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            }
+        });
+
+        // Load cards on page load
+        loadCards();
+
+        function setActiveNav(activeId) {
+            document.getElementById('uploadNav').classList.remove('active');
+            document.getElementById('cardsNav').classList.remove('active');
+            document.getElementById(activeId).classList.add('active');
+        }
+
+        // On initial load, ensure correct background
+        if (document.getElementById('uploadSection').style.display !== 'none') {
+            document.body.classList.add('upload-bg');
+        } else {
+            document.body.classList.remove('upload-bg');
+        }
+
+        function filterCardsTable() {
+            const input = document.getElementById('cardSearchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('cardsTable');
+            const trs = table.getElementsByTagName('tr');
+            for (let i = 1; i < trs.length; i++) { // skip header
+                const tds = trs[i].getElementsByTagName('td');
+                let found = false;
+                for (let j = 0; j < tds.length - 1; j++) { // skip actions
+                    if (tds[j].textContent.toLowerCase().indexOf(filter) > -1) {
+                        found = true;
+                        break;
+                    }
+                }
+                trs[i].style.display = found ? '' : 'none';
+            }
+        }
+
+        function exportTableToCSV() {
+            let csv = [];
+            const rows = document.querySelectorAll("#cardsTable tr");
+            for (let row of rows) {
+                let cols = Array.from(row.querySelectorAll("th,td"))
+                    .slice(0, -1) // skip actions
+                    .map(td => `"${td.innerText.replace(/"/g, '""')}"`);
+                csv.push(cols.join(","));
+            }
+            downloadCSV(csv.join("\n"), 'cards.csv');
+        }
+        function downloadCSV(csv, filename) {
+            const csvFile = new Blob([csv], { type: "text/csv" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(csvFile);
+            link.download = filename;
+            link.click();
+        }
+        function exportTableToExcel() {
+            let table = document.getElementById("cardsTable");
+            // Create a temporary table without the Actions column
+            let tempTable = table.cloneNode(true);
+            let rows = tempTable.querySelectorAll("tr");
+            rows.forEach(row => {
+                let cells = row.querySelectorAll("th, td");
+                if (cells.length > 0) {
+                    cells[cells.length - 1].remove(); // Remove the last cell (Actions column)
+                }
+            });
+            
+            let html = tempTable.outerHTML.replace(/<a[^>]*>|<\/a>/g, ""); // Remove links
+            let url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+            let link = document.createElement("a");
+            link.href = url;
+            link.download = "cards.xls";
+            link.click();
+        }
+        function exportTableToPDF() {
+            try {
+                // Check if required libraries are available
+                if (typeof jspdf === 'undefined') {
+                    alert('PDF library not loaded. Please refresh the page and try again.');
+                    return;
+                }
+                
+                // Create a temporary table without the Actions column for PDF export
+                let table = document.getElementById("cardsTable");
+                if (!table) {
+                    alert('Table not found. Please make sure you are on the All Cards page.');
+                    return;
+                }
+                
+                let tempTable = table.cloneNode(true);
+                let rows = tempTable.querySelectorAll("tr");
+                rows.forEach(row => {
+                    let cells = row.querySelectorAll("th, td");
+                    if (cells.length > 0) {
+                        cells[cells.length - 1].remove(); // Remove the last cell (Actions column)
+                    }
+                });
+                
+                // Make sure the temporary table is visible for html2canvas
+                tempTable.style.position = 'absolute';
+                tempTable.style.left = '-9999px';
+                tempTable.style.top = '0';
+                document.body.appendChild(tempTable);
+                
+                html2canvas(tempTable, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff'
+                }).then(canvas => {
+                    // Remove the temporary table
+                    document.body.removeChild(tempTable);
+                    
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jspdf.jsPDF('l', 'pt', 'a4');
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    const imgWidth = pageWidth - 40;
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    
+                    // Check if image height exceeds page height
+                    if (imgHeight > pageHeight - 40) {
+                        // Split into multiple pages if needed
+                        let heightLeft = imgHeight;
+                        let position = 20;
+                        pdf.addImage(imgData, 'PNG', 20, position, imgWidth, imgHeight);
+                        heightLeft -= (pageHeight - 40);
+                        
+                        while (heightLeft >= 0) {
+                            position = heightLeft - imgHeight + 20;
+                            pdf.addPage();
+                            pdf.addImage(imgData, 'PNG', 20, position, imgWidth, imgHeight);
+                            heightLeft -= (pageHeight - 40);
+                        }
+                    } else {
+                        pdf.addImage(imgData, 'PNG', 20, 20, imgWidth, imgHeight);
+                    }
+                    
+                    pdf.save("cards.pdf");
+                }).catch(error => {
+                    console.error('PDF generation error:', error);
+                    alert('Error generating PDF: ' + error.message);
+                    // Clean up temporary table if it exists
+                    if (document.body.contains(tempTable)) {
+                        document.body.removeChild(tempTable);
+                    }
+                });
+                
+            } catch (error) {
+                console.error('PDF export error:', error);
+                alert('Error exporting PDF: ' + error.message);
+            }
+        }
+
+        function deleteCard() {
+            if (!currentEditId) return;
+            
+            if (confirm('Are you sure you want to delete this card? This action cannot be undone.')) {
+                fetch(`/delete_card/${currentEditId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        closeEditModal();
+                        loadCards(); // Refresh the cards list
+                        alert('Card deleted successfully!');
+                    } else {
+                        alert('Failed to delete card: ' + result.error);
+                    }
+                })
+                .catch(error => {
+                    alert('Network error: ' + error.message);
+                });
+            }
+        }
+
+        async function loadPersonalCards() {
+            try {
+                const response = await fetch('/personal-cards?json=1');
+                const result = await response.json();
+                if (result.success) {
+                    personalCards = result.cards;
+                    displayPersonalCards(personalCards);
+                } else {
+                    document.getElementById('personalCardsTableBody').innerHTML = '<tr><td colspan="9" class="text-center text-muted">Failed to load personal cards</td></tr>';
+                }
+            } catch (error) {
+                document.getElementById('personalCardsTableBody').innerHTML = '<tr><td colspan="9" class="text-center text-muted">Network error loading personal cards</td></tr>';
+            }
+        }
+
+        function displayPersonalCards(cards) {
+            const tableBody = document.getElementById('personalCardsTableBody');
+            if (!tableBody) return;
+            if (cards.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No personal cards found</td></tr>';
+                return;
+            }
+            tableBody.innerHTML = cards.map(card => `
+                <tr>
+                    <td>${card.name || ''}</td>
+                    <td>${card.company || ''}</td>
+                    <td>${card.designation || ''}</td>
+                    <td>${card.email || ''}</td>
+                    <td>${card.phone || ''}</td>
+                    <td>${card.website || ''}</td>
+                    <td>${card.address || ''}</td>
+                    <td>${card.additional_info || ''}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="openEditModal('${card._id}')">Edit</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterPersonalCardsTable() {
+            const input = document.getElementById('personalCardSearchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('personalCardsTable');
+            const trs = table.getElementsByTagName('tr');
+            for (let i = 1; i < trs.length; i++) { // skip header
+                const tds = trs[i].getElementsByTagName('td');
+                let found = false;
+                for (let j = 0; j < tds.length - 1; j++) { // skip actions
+                    if (tds[j].textContent.toLowerCase().indexOf(filter) > -1) {
+                        found = true;
+                        break;
+                    }
+                }
+                trs[i].style.display = found ? '' : 'none';
+            }
+        }
+    </script>
+    <footer style="background: rgba(255,255,255,0.7); color: #000; text-align: center; padding: 18px 0; font-size: 1rem; font-weight: 500; box-shadow: 0 -2px 20px rgba(0,0,0,0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; margin-top: 40px;">
+        © 2025 All Rights Reserved by C4i4
+    </footer>
+</body>
+</html> 

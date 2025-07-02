@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sign Up</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-image: url('/static/representation-ecology-sustainability.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      min-height: 100vh;
+      position: relative;
+      font-family: 'Inter', sans-serif;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.25);
+      z-index: 0;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeIn 0.8s ease forwards;
+    }
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .form-label {
+      color: #ffffff;
+    }
+    .form-control {
+      background-color: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+    }
+    .form-control::placeholder {
+      color: #ccc;
+    }
+    .btn-primary {
+      background-color: #00ffc3;
+      color: #000;
+      border: none;
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      background-color: #00d9a5;
+      box-shadow: 0 0 10px #00ffc3, 0 0 20px #00ffc3;
+    }
+    .icon-start {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      padding-left: 12px;
+      pointer-events: none;
+      user-select: none;
+      color: #fff;
+      font-size: 1.1em;
+    }
+    .form-control.ps-5 {
+      padding-left: 2.5rem !important;
+    }
+    .form-check-label {
+      color: #fff;
+    }
+    /* Custom Toast Styles */
+    .toast {
+      background: rgba(30, 30, 30, 0.92) !important;
+      color: #fff !important;
+      border-radius: 16px !important;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+      border: none !important;
+      min-width: 280px;
+      max-width: 400px;
+      font-size: 1.05rem;
+      font-family: 'Inter', sans-serif;
+      padding: 0.75rem 1.25rem;
+    }
+    .toast-body {
+      color: #fff !important;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+    .text-bg-success {
+      background: linear-gradient(90deg, #00ffc3 0%, #00d9a5 100%) !important;
+      color: #222 !important;
+    }
+    .text-bg-danger {
+      background: linear-gradient(90deg, #ff4e50 0%, #f9d423 100%) !important;
+      color: #222 !important;
+    }
+    .text-bg-info {
+      background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%) !important;
+      color: #222 !important;
+    }
+    .text-bg-warning {
+      background: linear-gradient(90deg, #f7971e 0%, #ffd200 100%) !important;
+      color: #222 !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- ✅ Toast for Flash Messages -->
+  <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1055;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="toast show align-items-center text-bg-{{ category }} border-0 mb-2" role="alert">
+            <div class="d-flex">
+              <div class="toast-body">
+                {{ message }}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+  <div class="container d-flex align-items-center justify-content-end min-vh-100">
+    <div class="card shadow p-4 mx-auto" style="max-width: 400px; width: 100%; margin-right: 50px;">
+      <div class="text-center mb-3">
+        <img src="/static/c4i4-logo.png" alt="C4i4 Lab Logo" style="max-width: 120px; width: 100%; height: auto;">
+      </div>
+      <h2 class="mb-4 text-center text-white">Sign Up</h2>
+      <form method="POST">
+        <div class="mb-3 position-relative">
+          <label for="name" class="form-label">Name</label>
+          <input type="text" class="form-control ps-5" id="name" name="name" required placeholder="Enter your name">
+          <span class="icon-start">👤</span>
+        </div>
+        <div class="mb-3 position-relative">
+          <label for="employee_id" class="form-label">Employee ID</label>
+          <input type="text" class="form-control ps-5" id="employee_id" name="employee_id" required placeholder="Employee ID">
+          <span class="icon-start">🆔</span>
+        </div>
+        <div class="mb-3 position-relative">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control ps-5" id="email" name="email" required placeholder="Enter your email">
+          <span class="icon-start">📧</span>
+        </div>
+        <div class="mb-3 position-relative">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" class="form-control ps-5" id="password" name="password" required placeholder="Password">
+          <span class="icon-start">🔒</span>
+        </div>
+        <div class="mb-3 position-relative">
+          <label for="confirm_password" class="form-label">Confirm Password</label>
+          <input type="password" class="form-control ps-5" id="confirm_password" name="confirm_password" required placeholder="Confirm Password">
+          <span class="icon-start">🔒</span>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" value="" id="showPasswordCheck">
+          <label class="form-check-label" for="showPasswordCheck">
+            Show Password
+          </label>
+        </div>
+        <div style="height: 24px;"></div>
+        <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+      </form>
+      <div class="text-center mt-3">
+        <small class="text-white">Already have an account? <a href="/login" class="text-info">Sign In</a></small>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Show/hide password functionality
+    const showPasswordCheck = document.getElementById('showPasswordCheck');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    showPasswordCheck.addEventListener('change', function() {
+      const type = this.checked ? 'text' : 'password';
+      passwordInput.type = type;
+      confirmPasswordInput.type = type;
+    });
+  </script>
+  <script>
+    // Automatically hide Bootstrap toasts after 2 seconds (2000 ms)
+    document.querySelectorAll('.toast').forEach(function(toastEl) {
+      setTimeout(function() {
+        if (typeof bootstrap !== 'undefined') {
+          var toast = bootstrap.Toast.getOrCreateInstance(toastEl);
+          toast.hide();
+        } else {
+          toastEl.classList.remove('show');
+        }
+      }, 2000);
+    });
+  </script>
+</body>
+</html> 
