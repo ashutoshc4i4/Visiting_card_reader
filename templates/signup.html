@@ -131,9 +131,35 @@
       box-sizing: border-box;
       text-align: left;
     }
-    .password-requirements {
-      margin-top: 10px;
-      margin-bottom: 10px;
+    .password-match-feedback {
+      display: block;
+      width: 100%;
+      margin-top: 6px;
+      margin-bottom: 8px;
+      padding: 7px 12px;
+      border-radius: 7px;
+      font-size: 0.97em;
+      font-weight: 500;
+      background: rgba(255,255,255,0.7);
+      text-align: left;
+      min-height: 24px;
+    }
+    /* Password strength bar styles for signup page */
+    .power-container {
+      background-color: #2E424D !important;
+      width: 100%;
+      height: 10px;
+      border-radius: 5px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+      overflow: hidden;
+    }
+    #power-point {
+      background-color: #D73F40;
+      width: 0%;
+      height: 100%;
+      border-radius: 5px;
+      transition: width 0.5s, background 0.3s;
     }
   </style>
 </head>
@@ -157,7 +183,7 @@
   <div class="container d-flex align-items-center justify-content-end min-vh-100">
     <div class="card shadow p-4 mx-auto" style="max-width: 400px; width: 100%; margin-right: 50px;">
       <div class="text-center mb-3">
-        <img src="/static/c4i4-logo.png" alt="C4i4 Lab Logo" style="max-width: 120px; width: 100%; height: auto; cursor: pointer;" onclick="window.location.href = '/'">
+        <img src="/static/c4i4-logo.png" alt="C4i4 Lab Logo" style="max-width: 120px; width: 100%; height: auto;">
       </div>
       <h2 class="mb-4 text-center text-white">Sign Up</h2>
       <form method="POST">
@@ -180,11 +206,13 @@
           <label for="password" class="form-label">Password</label>
           <input type="password" class="form-control ps-5" id="password" name="password" required placeholder="Password">
           <span class="icon-start">🔒</span>
-          <div class="w-100 ps-5" style="margin-top: 6px;">
-            <div id="passwordStrength" class="mt-1">
-              <div id="strengthBar" style="height: 6px; border-radius: 3px; background: transparent; width: 100%; margin-bottom: 6px; transition: background 0.3s;"></div>
-              <span id="strengthText" style="font-size: 0.95em; font-weight: 500;"></span>
-            </div>
+          <!-- Password Strength Visual Bar -->
+          <div class="power-container mt-2" style="height: 8px; width: 100%; background: #e0e0e0; border-radius: 4px; overflow: hidden;">
+            <div id="power-point" style="height: 100%; width: 0%; background: #ff4e50; border-radius: 4px; transition: width 0.3s, background 0.3s;"></div>
+          </div>
+          <div id="passwordStrength" class="mt-2">
+            <div id="strengthBar" style="height: 8px; border-radius: 4px; background: transparent; width: 100%; margin-bottom: 4px; transition: background 0.3s;"></div>
+            <span id="strengthText" style="font-size: 0.95em; font-weight: 500;"></span>
           </div>
         </div>
         <div class="password-requirements mt-2 mb-2">
@@ -196,8 +224,8 @@
           <label for="confirm_password" class="form-label">Confirm Password</label>
           <input type="password" class="form-control ps-5" id="confirm_password" name="confirm_password" required placeholder="Confirm Password">
           <span class="icon-start">🔒</span>
-          <div id="confirmPasswordFeedback" class="d-block ps-5" style="font-size: 0.97em; font-weight: 500; margin-top: 4px;"></div>
         </div>
+        <div id="confirmPasswordFeedback" class="password-match-feedback"></div>
         <div class="form-check mb-3">
           <input class="form-check-input" type="checkbox" value="" id="showPasswordCheck">
           <label class="form-check-label" for="showPasswordCheck">
@@ -219,6 +247,7 @@
     const confirmPasswordInput = document.getElementById('confirm_password');
     const strengthBar = document.getElementById('strengthBar');
     const strengthText = document.getElementById('strengthText');
+    const powerPoint = document.getElementById('power-point');
     const confirmPasswordFeedback = document.getElementById('confirmPasswordFeedback');
 
     showPasswordCheck.addEventListener('change', function() {
@@ -248,6 +277,8 @@
       strengthBar.style.background = color;
       strengthText.textContent = text;
       strengthText.style.color = color === '#e0e0e0' ? '#eee' : color;
+      powerPoint.style.width = barWidth;
+      powerPoint.style.background = color;
       checkPasswordMatch();
     });
 
@@ -258,14 +289,17 @@
       const confirmVal = confirmPasswordInput.value;
       if (!confirmVal) {
         confirmPasswordFeedback.textContent = '';
+        confirmPasswordFeedback.style.background = 'rgba(255,255,255,0.7)';
         return;
       }
       if (passwordVal === confirmVal) {
         confirmPasswordFeedback.textContent = '✅ Passwords match';
-        confirmPasswordFeedback.style.color = '#00d9a5';
+        confirmPasswordFeedback.style.color = '#00a97f';
+        confirmPasswordFeedback.style.background = 'rgba(0,255,195,0.13)';
       } else {
         confirmPasswordFeedback.textContent = '❌ Passwords do not match';
-        confirmPasswordFeedback.style.color = '#ff4e50';
+        confirmPasswordFeedback.style.color = '#d73f40';
+        confirmPasswordFeedback.style.background = 'rgba(255,78,80,0.13)';
       }
     }
   </script>
