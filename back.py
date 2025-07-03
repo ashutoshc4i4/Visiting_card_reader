@@ -30,8 +30,8 @@ bcrypt = Bcrypt(app)
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
 # Gemini API key from environment
-GEMINI_API_KEY = 'AIzaSyBZW-SFFPMB-zkWfYGbMGlo-pdOqzslw3M'
-GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'replace_with_real_key')
+GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-pro-vision:generateContent'
 
 # MongoDB configuration
 # MongoDB configuration
@@ -354,27 +354,27 @@ def signup():
         # Validate all fields
         if not all([name, employee_id, email, password, confirm_password]):
             flash('All fields are required.', 'danger')
-            return render_template('signup.html')
+            return render_template('signup.html', name=name, employee_id=employee_id, email=email)
 
         # Passwords match
         if password != confirm_password:
             flash('Passwords do not match.', 'danger')
-            return render_template('signup.html')
+            return render_template('signup.html', name=name, employee_id=employee_id, email=email)
 
         # Password strength
         if not is_strong_password(password):
             flash('Password must be at least 8 characters long and include uppercase, lowercase, digit, and special character.', 'danger')
-            return render_template('signup.html')
+            return render_template('signup.html', name=name, employee_id=employee_id, email=email)
 
         # Unique email
         if get_user_by_email(email):
             flash('Email already registered.', 'danger')
-            return render_template('signup.html')
+            return render_template('signup.html', name=name, employee_id=employee_id, email=email)
 
         # Unique employee ID
         if get_user_by_employee_id(employee_id):
             flash('Employee ID already registered.', 'danger')
-            return render_template('signup.html')
+            return render_template('signup.html', name=name, employee_id=employee_id, email=email)
 
         # Hash password and insert
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
