@@ -1,148 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>My Personal Cards</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background-image: url('/static/representation-ecology-sustainability.jpg');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      min-height: 100vh;
-      position: relative;
-      font-family: 'Inter', sans-serif;
-    }
-    body::before {
-      content: "";
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.25);
-      z-index: 0;
-    }
-    .card-list {
-      background: rgba(255, 255, 255, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      backdrop-filter: blur(12px);
-      border-radius: 20px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-      position: relative;
-      z-index: 1;
-      margin: 40px auto;
-      max-width: 700px;
-      padding: 32px;
-    }
-    h2 {
-      color: #fff;
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    .card-item {
-      background: rgba(255,255,255,0.7);
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    .card-item:last-child {
-      margin-bottom: 0;
-    }
-    .card-label {
-      font-weight: 600;
-      color: #00ffc3;
-    }
-    .card-value {
-      color: #222;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-image: url('/static/representation-ecology-sustainability.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
+            position: relative;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Dark overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.25);
+            z-index: 0;
+        }
+
+        /* Glassmorphism card */
+        .card {
+            background: rgba(255, 255, 255, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            position: relative;
+            z-index: 1;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-label {
+            color: #ffffff;
+        }
+
+        .form-control {
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+        }
+
+        .form-control::placeholder {
+            color: #ccc;
+        }
+
+        /* Button glow effect */
+        .btn-primary {
+            background-color: #00ffc3;
+            color: #000;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #00d9a5;
+            box-shadow: 0 0 10px #00ffc3, 0 0 20px #00ffc3;
+        }
+
+        .icon-start {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding-left: 12px;
+            pointer-events: none;
+            user-select: none;
+            color: #fff;
+            font-size: 1.1em;
+        }
+
+        .form-control.ps-5 {
+            padding-left: 2.5rem !important;
+        }
+
+        /* Custom Toast Styles */
+        .toast {
+          background: rgba(30, 30, 30, 0.92) !important;
+          color: #fff !important;
+          border-radius: 16px !important;
+          box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+          border: none !important;
+          min-width: 280px;
+          max-width: 400px;
+          font-size: 1.05rem;
+          font-family: 'Inter', sans-serif;
+          padding: 0.75rem 1.25rem;
+        }
+        .toast-body {
+          color: #fff !important;
+          font-weight: 500;
+          letter-spacing: 0.01em;
+        }
+        .text-bg-success {
+          background: linear-gradient(90deg, #00ffc3 0%, #00d9a5 100%) !important;
+          color: #222 !important;
+        }
+        .text-bg-danger {
+          background: linear-gradient(90deg, #ff4e50 0%, #f9d423 100%) !important;
+          color: #222 !important;
+        }
+        .text-bg-info {
+          background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%) !important;
+          color: #222 !important;
+        }
+        .text-bg-warning {
+          background: linear-gradient(90deg, #f7971e 0%, #ffd200 100%) !important;
+          color: #222 !important;
+        }
+    </style>
 </head>
 <body>
-  <!-- Toast Notification -->
-  <div id="toastNotification" class="toast-notification" style="display:none; position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 2000; min-width: 280px; max-width: 400px; background: rgba(30,30,30,0.92); color: #fff; border-radius: 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.18); font-size: 1.05rem; font-family: 'Inter', sans-serif; padding: 0.75rem 1.25rem;">
-    <span id="toastMessage"></span>
-  </div>
-  <div class="container">
-    <div class="text-center mb-3">
-      <img src="/static/c4i4-logo.png" alt="C4i4 Lab Logo" style="max-width: 120px; width: 100%; height: auto; cursor: pointer;" onclick="window.location.href = '/'">
+    <!-- ✅ Toast for Flash Messages -->
+    <div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1055;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="toast show align-items-center text-bg-{{ category }} border-0 mb-2" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                {{ message }}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </div>
-    <div class="mb-4">
-      <form id="personalUploadForm" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center;">
-        <input type="file" id="personalFileInput" accept=".jpg,.jpeg,.png" class="form-control" style="max-width: 300px;">
-        <button type="submit" class="btn btn-success" id="personalUploadBtn" disabled>Upload Card</button>
-      </form>
-    </div>
-    <div class="card-list">
-      <h2>My Personal Cards</h2>
-      {% if cards %}
-        {% for card in cards %}
-          <div class="card-item">
-            <div><span class="card-label">Name:</span> <span class="card-value">{{ card.name or '-' }}</span></div>
-            <div><span class="card-label">Company:</span> <span class="card-value">{{ card.company or '-' }}</span></div>
-            <div><span class="card-label">Designation:</span> <span class="card-value">{{ card.designation or '-' }}</span></div>
-            <div><span class="card-label">Email:</span> <span class="card-value">{{ card.email or '-' }}</span></div>
-            <div><span class="card-label">Phone:</span> <span class="card-value">{{ card.phone or '-' }}</span></div>
-            <div><span class="card-label">Address:</span> <span class="card-value">{{ card.address or '-' }}</span></div>
-            <div><span class="card-label">Website:</span> <span class="card-value">{{ card.website or '-' }}</span></div>
-            <div><span class="card-label">Scanned At:</span> <span class="card-value">{{ card.uploaded_at or '-' }}</span></div>
-          </div>
-        {% endfor %}
-      {% else %}
-        <div class="text-center text-white">No personal cards found.</div>
-      {% endif %}
-    </div>
-  </div>
-  <script>
-    // Toast notification logic (same as index.html)
-    function showToast(message, duration = 2500) {
-      const toast = document.getElementById('toastNotification');
-      const toastMsg = document.getElementById('toastMessage');
-      toastMsg.textContent = message;
-      toast.style.display = 'block';
-      setTimeout(() => {
-        toast.style.display = 'none';
-      }, duration);
-    }
 
-    // Personal card upload logic
-    const personalUploadForm = document.getElementById('personalUploadForm');
-    const personalFileInput = document.getElementById('personalFileInput');
-    const personalUploadBtn = document.getElementById('personalUploadBtn');
-    personalFileInput.addEventListener('change', function() {
-      personalUploadBtn.disabled = personalFileInput.files.length === 0;
-    });
-    personalUploadForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      if (!personalFileInput.files.length) {
-        showToast('Please select a file to upload.');
-        return;
-      }
-      const formData = new FormData();
-      formData.append('file', personalFileInput.files[0]);
-      try {
-        const response = await fetch('/upload', {
-          method: 'POST',
-          body: formData
+    <!-- 💳 Login Form -->
+    <div class="container d-flex align-items-center justify-content-end min-vh-100">
+        <div class="card shadow p-4" style="min-width: 350px; margin-right: 50px;">
+            <div class="text-center mb-3">
+                <img src="/static/c4i4-logo.png" alt="C4i4 Lab Logo" style="max-width: 120px; width: 100%; height: auto;">
+            </div>
+            <h2 class="mb-4 text-center text-white">Login</h2>
+            <form method="POST">
+                <div class="mb-3 position-relative">
+                    <label for="email" class="form-label">Email or Employee ID</label>
+                    <input type="text" class="form-control ps-5" id="email" name="email" required autofocus placeholder="Email or Employee ID">
+                    <span class="icon-start">📧</span>
+                </div>
+                <div class="mb-3 position-relative">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control ps-5" id="password" name="password" required placeholder="Enter password">
+                    <span class="icon-start">🔒</span>
+                    <span class="icon-eye" id="togglePassword" style="position:absolute; right:16px; top:50%; transform:translateY(-50%); cursor:pointer; color:#00ffc3; font-size:1.4em;">
+                        <i id="eyeIcon" class="bi bi-eye"></i>
+                    </span>
+                </div>
+                <div class="mb-2 text-end">
+                    <a href="/forgot-password" class="link-light small">Forgot Password?</a>
+                </div>
+                <div style="height: 24px;"></div>
+                <!-- 🌀 Login Button with Spinner -->
+                <button id="loginBtn" type="submit" class="btn btn-primary w-100 d-flex justify-content-center align-items-center">
+                    <span class="spinner-border spinner-border-sm me-2 d-none" id="loginSpinner" role="status" aria-hidden="true"></span>
+                    <span id="loginText">Login</span>
+                </button>
+            </form>
+            <div class="text-center mt-3">
+                <small class="text-white">Don't have an account? <a href="/signup" class="text-info">Sign Up</a></small>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🧠 Scripts -->
+    <script>
+        const loginForm = document.querySelector("form");
+        const loginBtn = document.getElementById("loginBtn");
+        const loginSpinner = document.getElementById("loginSpinner");
+        const loginText = document.getElementById("loginText");
+
+        loginForm.addEventListener("submit", function () {
+            loginBtn.disabled = true;
+            loginSpinner.classList.remove("d-none");
+            loginText.textContent = "Logging in...";
         });
-        const result = await response.json();
-        if (result.success) {
-          showToast(result.message || 'Card uploaded successfully!');
-          // Optionally reload personal cards list
-          personalFileInput.value = '';
-          personalUploadBtn.disabled = true;
-          window.location.reload();
-        } else {
-          showToast(result.error || 'Upload failed.');
-          personalFileInput.value = '';
-          personalUploadBtn.disabled = true;
+
+        // Show/hide password functionality with icon
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+        const eyeIcon = document.getElementById('eyeIcon');
+        if (togglePassword && passwordInput && eyeIcon) {
+            togglePassword.addEventListener('click', function() {
+                const isPassword = passwordInput.type === 'password';
+                passwordInput.type = isPassword ? 'text' : 'password';
+                eyeIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+            });
         }
-      } catch (error) {
-        showToast('Network error: ' + error.message);
-        personalFileInput.value = '';
-        personalUploadBtn.disabled = true;
-      }
-    });
-  </script>
+    </script>
+
+    <!-- Bootstrap Toast JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Automatically hide Bootstrap toasts after 2 seconds (2000 ms)
+      document.querySelectorAll('.toast').forEach(function(toastEl) {
+        setTimeout(function() {
+          if (typeof bootstrap !== 'undefined') {
+            var toast = bootstrap.Toast.getOrCreateInstance(toastEl);
+            toast.hide();
+          } else {
+            toastEl.classList.remove('show');
+          }
+        }, 2000);
+      });
+    </script>
 </body>
 </html> 
