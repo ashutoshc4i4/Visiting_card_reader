@@ -18,18 +18,22 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import certifi
+from dotenv import load_dotenv
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'
+# Secure Flask secret key from environment
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'dev_secret_key_change_me')
 CORS(app)
 bcrypt = Bcrypt(app)
 
 # Configuration
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
-GEMINI_API_KEY = 'AIzaSyBZW-SFFPMB-zkWfYGbMGlo-pdOqzslw3M'
+# Gemini API key from environment
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'replace_with_real_key')
 GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
 
+# MongoDB configuration
 # MongoDB configuration
 MONGO_URI = 'mongodb+srv://ashutoshshrivastava:GvckKYjo2EQ8jCkJ@cluster0.vqa7ne9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 DB_NAME = 'visiting_card'
@@ -44,6 +48,7 @@ db = client[DB_NAME]
 collection = db[COLLECTION_NAME]
 users_collection = db['users']
 
+
 reset_tokens = {}
 
 # SMTP configuration (replace with your real credentials)
@@ -52,6 +57,13 @@ SMTP_PORT = 587  # e.g., 587 for TLS
 SMTP_USERNAME = 'your_email@example.com'
 SMTP_PASSWORD = 'your_email_password'
 SENDER_EMAIL = 'your_email@example.com'
+
+# Secure session cookies for production
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
+load_dotenv()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -472,4 +484,4 @@ def personal_cards():
     return render_template('personal_cards.html', cards=cards)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5000)
