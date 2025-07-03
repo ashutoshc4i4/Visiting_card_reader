@@ -118,6 +118,19 @@
       background: #e0e0e0;
       transition: background 0.3s;
     }
+    .password-badge {
+      display: block;
+      width: 100%;
+      font-size: 0.98em;
+      font-weight: 500;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #e0f7fa 0%, #b2ebf2 100%);
+      color: #01579b;
+      margin: 0 auto;
+      box-sizing: border-box;
+      text-align: left;
+    }
   </style>
 </head>
 <body>
@@ -168,8 +181,10 @@
             <span id="strengthText" style="font-size: 0.95em; font-weight: 500;"></span>
           </div>
         </div>
-        <div class="password-requirements mt-1">
-          <span class="badge bg-info text-dark" style="font-size: 1em; font-weight: 500; padding: 8px 14px; border-radius: 8px; background: linear-gradient(90deg, #e0f7fa 0%, #b2ebf2 100%); color: #01579b;">Password must be at least 8 characters and include uppercase, lowercase, a digit, and a special character.</span>
+        <div class="password-requirements mt-2 mb-2">
+          <span class="badge bg-info text-dark password-badge">
+            Password must be at least 8 characters and include uppercase, lowercase, a digit, and a special character.
+          </span>
         </div>
         <div class="mb-3 position-relative">
           <label for="confirm_password" class="form-label">Confirm Password</label>
@@ -225,19 +240,4 @@
       strengthText.textContent = text;
       strengthText.style.color = color === '#e0e0e0' ? '#eee' : color;
     });
-  </script>
-  <script>
-    // Automatically hide Bootstrap toasts after 2 seconds (2000 ms)
-    document.querySelectorAll('.toast').forEach(function(toastEl) {
-      setTimeout(function() {
-        if (typeof bootstrap !== 'undefined') {
-          var toast = bootstrap.Toast.getOrCreateInstance(toastEl);
-          toast.hide();
-        } else {
-          toastEl.classList.remove('show');
-        }
-      }, 2000);
-    });
-  </script>
-</body>
-</html> 
+  </scri
