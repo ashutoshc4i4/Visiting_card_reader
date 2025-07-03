@@ -31,7 +31,7 @@ GEMINI_API_KEY = 'AIzaSyBZW-SFFPMB-zkWfYGbMGlo-pdOqzslw3M'
 GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
 
 # MongoDB configuration
-MONGO_URI = 'mongodb+srv://ashutoshshrivastava:<db_password>@cluster0.vqa7ne9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+MONGO_URI = 'mongodb+srv://ashutoshshrivastava:GvckKYjo2EQ8jCkJ@cluster0.vqa7ne9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 DB_NAME = 'visiting_card'
 COLLECTION_NAME = 'cards'
 
