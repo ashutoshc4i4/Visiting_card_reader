@@ -1263,9 +1263,6 @@
                     document.getElementById('cameraSection').style.display = 'none';
                 } else {
                     showResult(null, false, result.error);
-                    resetCamera();
-                    document.getElementById('uploadSection').style.display = 'block';
-                    document.getElementById('cameraSection').style.display = 'none';
                 }
             } catch (error) {
                 showResult(null, false, 'Network error: ' + error.message);
