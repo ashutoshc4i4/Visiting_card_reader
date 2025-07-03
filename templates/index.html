@@ -1038,9 +1038,7 @@
         });
 
         fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) {
-                uploadBtn.disabled = false;
-            }
+            uploadBtn.disabled = fileInput.files.length === 0;
         });
 
         uploadBtn.addEventListener('click', async () => {
@@ -1063,15 +1061,19 @@
                 if (result.success) {
                     lastExtractedCard = result.data;
                     showSavePrompt(result.data);
+                    fileInput.value = '';
+                    uploadBtn.disabled = true;
                 } else {
                     showResult(null, false, result.error);
+                    fileInput.value = '';
+                    uploadBtn.disabled = true;
                 }
             } catch (error) {
                 showResult(null, false, 'Network error: ' + error.message);
+                fileInput.value = '';
+                uploadBtn.disabled = true;
             } finally {
                 loading.style.display = 'none';
-                uploadBtn.disabled = false;
-                fileInput.value = '';
             }
         });
 
@@ -1263,6 +1265,9 @@
                     document.getElementById('cameraSection').style.display = 'none';
                 } else {
                     showResult(null, false, result.error);
+                    resetCamera();
+                    document.getElementById('uploadSection').style.display = 'block';
+                    document.getElementById('cameraSection').style.display = 'none';
                 }
             } catch (error) {
                 showResult(null, false, 'Network error: ' + error.message);
