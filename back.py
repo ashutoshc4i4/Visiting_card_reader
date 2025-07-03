@@ -33,21 +33,19 @@ ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
 GEMINI_API_KEY = 'AIzaSyBZW-SFFPMB-zkWfYGbMGlo-pdOqzslw3M'
 GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
 
-# MongoDB configuration
-# MongoDB configuration
-MONGO_URI = 'mongodb+srv://ashutoshshrivastava:GvckKYjo2EQ8jCkJ@cluster0.vqa7ne9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+# MongoDB configuration for local development
+MONGO_URI = 'mongodb://localhost:27017/'
 DB_NAME = 'visiting_card'
 COLLECTION_NAME = 'cards'
 
 # Create upload folder if it doesn't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# MongoDB client
-client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
+# MongoDB client (local, no certifi needed)
+client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 collection = db[COLLECTION_NAME]
 users_collection = db['users']
-
 
 reset_tokens = {}
 
@@ -225,6 +223,7 @@ def upload_file():
             extracted_data['uploaded_at'] = datetime.datetime.now()
             extracted_data['original_filename'] = filename
             extracted_data['scanned_by'] = session['user']
+            extracted_data['shared'] = False
 
             # Check for extract_only mode
             extract_only = request.args.get('extract_only') == '1'
@@ -236,7 +235,7 @@ def upload_file():
             email = extracted_data.get('email')
             phone = extracted_data.get('phone')
             if email or phone:
-                duplicate_query = {'scanned_by': session['user']}
+                duplicate_query = {}
                 if email:
                     duplicate_query['email'] = email
                 if phone:
@@ -272,10 +271,12 @@ def upload_file():
 def get_cards():
     """Get cards visible to the current user"""
     try:
-        # Always show only cards scanned by the default/common user
-        query = {'scanned_by': 'c4i4.lab@c4i4.com'}
+        # Show cards shared by users or scanned by the default/common user
+        query = {'$or': [
+            {'scanned_by': 'c4i4.lab@c4i4.com'},
+            {'shared': True}
+        ]}
         cards = list(collection.find(query))
-        # Convert ObjectId to string for JSON serialization
         for card in cards:
             card['_id'] = str(card['_id'])
         return jsonify({'success': True, 'cards': cards})
@@ -482,6 +483,25 @@ def personal_cards():
     if request.args.get('json') == '1':
         return jsonify({'success': True, 'cards': cards})
     return render_template('personal_cards.html', cards=cards)
+
+@app.route('/share_card/<card_id>', methods=['POST'])
+@login_required
+def share_card(card_id):
+    """Toggle the shared status of a personal card"""
+    try:
+        if not ObjectId.is_valid(card_id):
+            return jsonify({'error': 'Invalid card ID'}), 400
+        card = collection.find_one({'_id': ObjectId(card_id)})
+        if not card:
+            return jsonify({'error': 'Card not found'}), 404
+        user_email = session.get('user')
+        if card.get('scanned_by') != user_email:
+            return jsonify({'error': 'Unauthorized'}), 403
+        new_shared = not card.get('shared', False)
+        collection.update_one({'_id': ObjectId(card_id)}, {'$set': {'shared': new_shared}})
+        return jsonify({'success': True, 'shared': new_shared})
+    except Exception as e:
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)
