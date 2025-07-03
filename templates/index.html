@@ -775,7 +775,7 @@
                     <div class="upload-icon">📁</div>
                     <div class="upload-text">Drag & Drop your visiting card image here</div>
                     <div class="upload-hint">or click to browse (JPG, JPEG, PNG)</div>
-                    <input type="file" id="fileInput" class="file-input" accept=".jpg,.jpeg,.png">
+                    <input type="file" id="fileInput" name="file" class="file-input" accept=".jpg,.jpeg,.png">
                 </div>
                 <div style="display: flex; justify-content: center; gap: 10px;">
                     <button class="upload-btn" id="uploadBtn" disabled>Extract Details</button>
@@ -1038,36 +1038,30 @@
             }
         });
 
-        uploadBtn.addEventListener('click', async () => {
-            if (fileInput.files.length === 0) return;
-
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-
-            // Show loading
-            loading.style.display = 'block';
-            resultSection.style.display = 'none';
-            uploadBtn.disabled = true;
-
-            try {
-                const response = await fetch('/upload?extract_only=1', {
-                    method: 'POST',
-                    body: formData
-                });
-                const result = await response.json();
-                if (result.success) {
-                    lastExtractedCard = result.data;
-                    showSavePrompt(result.data);
-                } else {
-                    showResult(null, false, result.error);
-                }
-            } catch (error) {
-                showResult(null, false, 'Network error: ' + error.message);
-            } finally {
-                loading.style.display = 'none';
-                uploadBtn.disabled = false;
-                fileInput.value = '';
+        uploadBtn.addEventListener('click', function() {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file.');
+                return;
             }
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Card details extracted and saved!');
+                } else {
+                    alert(data.error || 'Upload failed');
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
         });
 
         function showSavePrompt(data) {
