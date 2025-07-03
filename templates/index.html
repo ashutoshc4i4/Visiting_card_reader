@@ -737,7 +737,7 @@
     <nav class="navbar navbar-expand-lg navbar-light shadow-sm mb-4">
       <div class="container-fluid">
         <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2" href="#" onclick="showSection('upload', event); setActiveNav('uploadNav'); return false;">
-          <img src="{{ url_for('static', filename='c4i4-logo.png') }}" alt="C4i4 Lab Logo" style="max-height: 38px; width: auto; object-fit: contain;">
+          <img src="/static/c4i4-logo.png" alt="C4i4 Lab Logo" style="max-width: 120px; width: 100%; height: auto; cursor: pointer;" onclick="showSection('upload');">
           <span>📇 Card Scanner</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
