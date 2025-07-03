@@ -1047,6 +1047,7 @@
 
         // On page load
         window.onload = function() {
+            history.pushState(null, '', window.location.pathname);
             const lastSection = localStorage.getItem('selectedSection') || 'upload';
             showSection(lastSection);
         };
@@ -1594,13 +1595,14 @@
                     if (result.success) {
                         closeEditModal();
                         loadCards(); // Refresh the cards list
-                        alert('Card deleted successfully!');
+                        loadPersonalCards(); // Refresh personal cards list
+                        showToast('Card deleted successfully!', '🗑️');
                     } else {
-                        alert('Failed to delete card: ' + result.error);
+                        showToast('Failed to delete card: ' + result.error, '❌');
                     }
                 })
                 .catch(error => {
-                    alert('Network error: ' + error.message);
+                    showToast('Network error: ' + error.message, '❌');
                 });
             }
         }
@@ -1791,6 +1793,15 @@
                 alert('Error exporting PDF: ' + error.message);
             }
         }
+
+        // Add this after all navigation and section logic
+        window.addEventListener('popstate', function(event) {
+            // If the user is on the main app, just switch section instead of leaving
+            const lastSection = localStorage.getItem('selectedSection') || 'upload';
+            showSection(lastSection);
+            // Push the state back so the user stays in the app
+            history.pushState(null, '', window.location.pathname);
+        });
     </script>
     <footer style="background: rgba(255,255,255,0.7); color: #000; text-align: center; padding: 18px 0; font-size: 1rem; font-weight: 500; box-shadow: 0 -2px 20px rgba(0,0,0,0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; margin-top: 40px;">
         © 2025 All Rights Reserved by C4i4
