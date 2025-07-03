@@ -712,6 +712,8 @@
             position: fixed;
             top: 30px;
             right: 30px;
+            min-width: 260px;
+            max-width: 400px;
             background: linear-gradient(90deg, #00ffc3 0%, #00d9a5 100%);
             color: #222;
             padding: 18px 32px;
@@ -720,15 +722,51 @@
             font-size: 1.1rem;
             font-weight: 600;
             z-index: 9999;
-            opacity: 0.98;
+            opacity: 0;
             display: flex;
             align-items: center;
             gap: 10px;
-            animation: fadeInToast 0.5s;
+            pointer-events: none;
+            transition: opacity 0.5s, transform 0.5s;
+            transform: translateY(-20px);
         }
-        @keyframes fadeInToast {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 0.98; transform: translateY(0); }
+        .toast-notification.show {
+            opacity: 0.98;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+        .toast-notification .toast-icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        .web3-toast {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: #1f1f1f;
+            color: #fff;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transition: all 0.4s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+        }
+
+        .web3-toast .icon {
+            font-size: 18px;
+        }
+
+        .web3-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
         }
     </style>
 </head>
@@ -920,7 +958,7 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toastNotification" class="toast-notification" style="display:none;">
+    <div id="toastNotification" class="toast-notification">
         <span id="toastMessage"></span>
     </div>
 
@@ -1040,15 +1078,17 @@
         fileInput.addEventListener('change', () => {
             if (fileInput.files.length > 0) {
                 uploadBtn.disabled = false;
+                showToast('Card image selected. Ready to extract details.', '📤');
             }
         });
 
-        uploadBtn.addEventListener('click', function() {
+        uploadBtn.addEventListener('click', function () {
             const file = fileInput.files[0];
             if (!file) {
-                alert('Please select a file.');
+                showToast('Please select a file.', '⚠️');
                 return;
             }
+
             const formData = new FormData();
             formData.append('file', file);
 
@@ -1059,13 +1099,15 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Card details extracted and saved!');
+                    showToast('Card details extracted and saved!', '✅');
+                } else if (data.error && data.error.toLowerCase().includes('duplicate')) {
+                    showToast('Duplicate card detected. This card already exists.', '⚠️');
                 } else {
-                    alert(data.error || 'Upload failed');
+                    showToast(data.error || 'Upload failed', '❌');
                 }
             })
             .catch(error => {
-                alert('Error: ' + error);
+                showToast('Error: ' + error, '❌');
             });
         });
 
@@ -1620,14 +1662,21 @@
             }
         }
 
-        function showToast(message) {
-            const toast = document.getElementById('toastNotification');
-            const toastMsg = document.getElementById('toastMessage');
-            toastMsg.textContent = message;
-            toast.style.display = 'flex';
+        function showToast(message, icon = 'ℹ️') {
+            const toast = document.createElement('div');
+            toast.className = 'web3-toast';
+            toast.innerHTML = `<span class="icon">${icon}</span><span class="message">${message}</span>`;
+
+            document.body.appendChild(toast);
+
             setTimeout(() => {
-                toast.style.display = 'none';
-            }, 3000);
+                toast.classList.add('show');
+            }, 100); // trigger animation
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300); // remove from DOM
+            }, 3500);
         }
 
         // Export functions for Personal Cards
