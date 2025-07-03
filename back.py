@@ -33,8 +33,9 @@ ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
 GEMINI_API_KEY = 'AIzaSyBZW-SFFPMB-zkWfYGbMGlo-pdOqzslw3M'
 GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
 
-# MongoDB configuration for local development
-MONGO_URI = 'mongodb://localhost:27017/'
+# MongoDB configuration
+# MongoDB configuration
+MONGO_URI = 'mongodb+srv://ashutoshshrivastava:GvckKYjo2EQ8jCkJ@cluster0.vqa7ne9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 DB_NAME = 'visiting_card'
 COLLECTION_NAME = 'cards'
 
