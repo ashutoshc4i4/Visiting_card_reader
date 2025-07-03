@@ -30,7 +30,7 @@ bcrypt = Bcrypt(app)
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
 # Gemini API key from environment
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'replace_with_real_key')
+GEMINI_API_KEY = 'AIzaSyBZW-SFFPMB-zkWfYGbMGlo-pdOqzslw3M'
 GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-pro-vision:generateContent'
 
 # MongoDB configuration
