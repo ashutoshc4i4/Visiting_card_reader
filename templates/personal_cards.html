@@ -59,17 +59,7 @@
   </style>
 </head>
 <body>
-  <!-- Toast Notification -->
-  <div id="toastNotification" class="toast-notification" style="display:none; position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 2000; min-width: 280px; max-width: 400px; background: rgba(30,30,30,0.92); color: #fff; border-radius: 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.18); font-size: 1.05rem; font-family: 'Inter', sans-serif; padding: 0.75rem 1.25rem;">
-    <span id="toastMessage"></span>
-  </div>
   <div class="container">
-    <div class="mb-4">
-      <form id="personalUploadForm" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center;">
-        <input type="file" id="personalFileInput" accept=".jpg,.jpeg,.png" class="form-control" style="max-width: 300px;">
-        <button type="submit" class="btn btn-success">Upload Card</button>
-      </form>
-    </div>
     <div class="card-list">
       <h2>My Personal Cards</h2>
       {% if cards %}
@@ -90,46 +80,5 @@
       {% endif %}
     </div>
   </div>
-  <script>
-    // Toast notification logic (same as index.html)
-    function showToast(message, duration = 2500) {
-      const toast = document.getElementById('toastNotification');
-      const toastMsg = document.getElementById('toastMessage');
-      toastMsg.textContent = message;
-      toast.style.display = 'block';
-      setTimeout(() => {
-        toast.style.display = 'none';
-      }, duration);
-    }
-
-    // Personal card upload logic
-    const personalUploadForm = document.getElementById('personalUploadForm');
-    const personalFileInput = document.getElementById('personalFileInput');
-    personalUploadForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      if (!personalFileInput.files.length) {
-        showToast('Please select a file to upload.');
-        return;
-      }
-      const formData = new FormData();
-      formData.append('file', personalFileInput.files[0]);
-      try {
-        const response = await fetch('/upload', {
-          method: 'POST',
-          body: formData
-        });
-        const result = await response.json();
-        if (result.success) {
-          showToast(result.message || 'Card uploaded successfully!');
-          // Optionally reload personal cards list
-          window.location.reload();
-        } else {
-          showToast(result.error || 'Upload failed.');
-        }
-      } catch (error) {
-        showToast('Network error: ' + error.message);
-      }
-    });
-  </script>
 </body>
 </html> 
