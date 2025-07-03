@@ -1639,9 +1639,28 @@
                     <td>${card.additional_info || ''}</td>
                     <td>
                         <button class="btn btn-sm btn-primary" onclick="openEditModal('${card._id}')">Edit</button>
+                        <button class="btn btn-sm ${card.shared ? 'btn-warning' : 'btn-success'}" onclick="toggleShare('${card._id}', ${!!card.shared})" style="padding:2px 8px;font-size:0.75rem;line-height:1.1;margin-left:4px;">
+                            ${card.shared ? 'Unshare' : 'Share'}
+                        </button>
                     </td>
                 </tr>
             `).join('');
+        }
+
+        async function toggleShare(cardId, currentlyShared) {
+            try {
+                const response = await fetch(`/share_card/${cardId}`, { method: 'POST' });
+                const result = await response.json();
+                if (result.success) {
+                    showToast(result.shared ? 'Card shared with common cards.' : 'Card unshared from common cards.', result.shared ? '🔗' : '🚫');
+                    loadPersonalCards();
+                    loadCards(); // Refresh common cards too
+                } else {
+                    showToast(result.error || 'Failed to update sharing.', '❌');
+                }
+            } catch (error) {
+                showToast('Network error: ' + error.message, '❌');
+            }
         }
 
         function filterPersonalCardsTable() {
