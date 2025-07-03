@@ -236,7 +236,7 @@ def upload_file():
             email = extracted_data.get('email')
             phone = extracted_data.get('phone')
             if email or phone:
-                duplicate_query = {}
+                duplicate_query = {'scanned_by': session['user']}
                 if email:
                     duplicate_query['email'] = email
                 if phone:
