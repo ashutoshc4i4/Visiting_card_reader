@@ -742,9 +742,8 @@
 
         .web3-toast {
             position: fixed;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-20px);
+            bottom: 30px;
+            right: 30px;
             background: #1f1f1f;
             color: #fff;
             padding: 14px 18px;
@@ -755,6 +754,7 @@
             align-items: center;
             gap: 10px;
             opacity: 0;
+            transform: translateY(20px);
             transition: all 0.4s ease;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
             z-index: 9999;
@@ -766,7 +766,7 @@
 
         .web3-toast.show {
             opacity: 1;
-            transform: translateX(-50%) translateY(0);
+            transform: translateY(0);
         }
     </style>
 </head>
@@ -1101,6 +1101,28 @@
             .then(data => {
                 if (data.success) {
                     showToast('Card details extracted and saved!', '✅');
+                    // Show extracted card details in resultSection
+                    if (data.data) {
+                        resultSection.style.display = 'block';
+                        resultSection.innerHTML = `
+                            <div class="result-card">
+                                <div class="result-header">
+                                    <span class="success-badge">Card scanned successfully!</span>
+                                </div>
+                                <div class="result-grid">
+                                    ${Object.entries(data.data).map(([key, value]) => {
+                                        if (key === '_id' || key === 'uploaded_at' || key === 'original_filename') return '';
+                                        return `
+                                            <div class="result-item">
+                                                <div class="result-label">${key.replace('_', ' ').toUpperCase()}</div>
+                                                <div class="result-value">${value || 'Not found'}</div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
                 } else if (data.error && data.error.toLowerCase().includes('duplicate')) {
                     showToast('Duplicate card detected. This card already exists.', '⚠️');
                 } else {
