@@ -184,7 +184,7 @@
       <form method="POST">
         <div class="mb-3 position-relative">
           <label for="name" class="form-label">Name</label>
-          <input type="text" class="form-control ps-5" id="name" name="name" required placeholder="Enter your name" value="{{ name|default('') }}">
+          <input type="text" class="form-control ps-5" id="name" name="name" required placeholder="Enter your name" value="{{ name|default('') }}" pattern="[A-Za-z\s'-]+" title="Name can only contain letters, spaces, hyphens, and apostrophes.">
           <span class="icon-start">👤</span>
         </div>
         <div class="mb-3 position-relative">
@@ -322,6 +322,13 @@
       if (this.value.length > 4) {
         this.value = this.value.slice(0, 4);
       }
+    });
+  </script>
+  <script>
+    // Restrict Name input to only letters, spaces, hyphens, and apostrophes
+    const nameInput = document.getElementById('name');
+    nameInput.addEventListener('input', function() {
+      this.value = this.value.replace(/[^A-Za-z\s'-]/g, '');
     });
   </script>
 </body>
