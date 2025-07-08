@@ -840,7 +840,7 @@
 
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                
+                <div id="loadingText" style="color: #667eea; font-size: 1.2rem; margin-top: 10px;">Extracting...</div>
             </div>
 
             <div class="result-section" id="resultSection"></div>
@@ -1093,12 +1093,17 @@
             const formData = new FormData();
             formData.append('file', file);
 
+            // Show loading indicator and extracting text
+            loading.style.display = 'block';
+            resultSection.style.display = 'none';
+
             fetch('/upload', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
+                loading.style.display = 'none';
                 if (data.success) {
                     showToast('Card details extracted and saved!', '✅');
                     // Show extracted card details in resultSection
@@ -1124,12 +1129,15 @@
                         `;
                     }
                 } else if (data.error && data.error.toLowerCase().includes('duplicate')) {
+                    loading.style.display = 'none';
                     showToast('Duplicate card detected. This card already exists.', '⚠️');
                 } else {
+                    loading.style.display = 'none';
                     showToast(data.error || 'Upload failed', '❌');
                 }
             })
             .catch(error => {
+                loading.style.display = 'none';
                 showToast('Error: ' + error, '❌');
             });
         });
