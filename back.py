@@ -278,6 +278,8 @@ def get_cards():
             {'shared': True}
         ]}
         cards = list(collection.find(query))
+        # Extra safeguard: filter in Python as well
+        cards = [card for card in cards if card.get('scanned_by') == 'c4i4.lab@c4i4.com' or card.get('shared') is True]
         for card in cards:
             card['_id'] = str(card['_id'])
         return jsonify({'success': True, 'cards': cards})
