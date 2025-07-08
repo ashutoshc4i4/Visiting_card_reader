@@ -394,22 +394,29 @@ def signup():
 
 def send_reset_email(to_email, reset_link):
     subject = 'Password Reset Request'
-    body = f"""
-    Hello,
-
-    You requested a password reset. Click the link below to reset your password:
-    {reset_link}
-
-    If you did not request this, please ignore this email.
-
-    Thanks,
-    Visiting Card Reader Team
+    html_body = f"""
+    <html>
+    <body style='font-family: Arial, sans-serif; background: #f9f9f9; color: #222;'>
+      <div style='max-width: 480px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 32px;'>
+        <h2 style='color: #00bfae;'>Password Reset Request</h2>
+        <p>Hello,</p>
+        <p>You requested a password reset. Click the button below to reset your password:</p>
+        <p style='text-align: center; margin: 32px 0;'>
+          <a href='{reset_link}' target='_blank' style='display: inline-block; background: linear-gradient(90deg, #00ffc3 0%, #00d9a5 100%); color: #222; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 1.1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.10);'>
+            Reset Password
+          </a>
+        </p>
+        <p>If you did not request this, please ignore this email.</p>
+        <p style='color: #888; font-size: 0.95em;'>Thanks,<br>Visiting Card Reader Team</p>
+      </div>
+    </body>
+    </html>
     """
-    msg = MIMEMultipart()
+    msg = MIMEMultipart('alternative')
     msg['From'] = SENDER_EMAIL
     msg['To'] = to_email
     msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
+    msg.attach(MIMEText(html_body, 'html'))
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
@@ -467,8 +474,7 @@ def reset_password(token):
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         users_collection.update_one({'email': email}, {'$set': {'password': hashed_password}})
         reset_tokens.pop(email, None)
-        flash('Password reset successful! Please log in.', 'success')
-        return redirect(url_for('login'))
+        return redirect(url_for('login', reset=1))
     return render_template('reset_password.html')
 
 @app.route('/personal-cards')
