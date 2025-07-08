@@ -1131,6 +1131,9 @@
                 } else if (data.error && data.error.toLowerCase().includes('duplicate')) {
                     loading.style.display = 'none';
                     showToast('Duplicate card detected. This card already exists.', '⚠️');
+                } else if (data.error && data.error.toLowerCase().includes('503')) {
+                    loading.style.display = 'none';
+                    showToast('The card extraction service is temporarily unavailable. Please try again in a few minutes.', '❌');
                 } else {
                     loading.style.display = 'none';
                     showToast(data.error || 'Upload failed', '❌');
