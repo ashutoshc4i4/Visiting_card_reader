@@ -189,7 +189,7 @@
         </div>
         <div class="mb-3 position-relative">
           <label for="employee_id" class="form-label">Employee ID</label>
-          <input type="text" class="form-control ps-5" id="employee_id" name="employee_id" required placeholder="Employee ID" value="{{ employee_id|default('') }}">
+          <input type="text" class="form-control ps-5" id="employee_id" name="employee_id" required placeholder="Employee ID" value="{{ employee_id|default('') }}" pattern="\d{4}" maxlength="4" minlength="4" title="Employee ID must be exactly 4 digits (numbers only)">
           <span class="icon-start">🆔</span>
         </div>
         <div class="mb-3 position-relative">
