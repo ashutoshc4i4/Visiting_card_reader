@@ -481,10 +481,13 @@ def reset_password(token):
 @login_required
 def personal_cards():
     user_email = session.get('user')
+    # Backend safeguard: Only show cards if scanned_by matches the current user exactly
     if not user_email or user_email == 'c4i4.lab@c4i4.com':
         cards = []
     else:
         cards = list(collection.find({'scanned_by': user_email}))
+        # Extra safeguard: filter in Python as well
+        cards = [card for card in cards if card.get('scanned_by') == user_email]
         for card in cards:
             card['_id'] = str(card['_id'])
     if request.args.get('json') == '1':
