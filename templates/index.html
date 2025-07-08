@@ -362,15 +362,31 @@
             margin: 20px 0;
         }
 
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 6px solid #667eea;
-            border-top: 6px solid transparent;
+        .spinner-glow {
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(255, 255, 255, 0.1);
+            border-top: 6px solid #667eea;
             border-radius: 50%;
-            animation: spin 0.9s linear infinite;
-            box-shadow: 0 0 12px rgba(102,126,234,0.4);
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 16px rgba(102, 126, 234, 0.5);
             margin: 0 auto 20px;
+        }
+
+        .extracting-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulseText 1.5s ease-in-out infinite;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        @keyframes pulseText {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
         }
 
         @keyframes spin {
@@ -839,8 +855,8 @@
             </div>
 
             <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <div id="loadingText" style="color: #667eea; font-size: 1.2rem; margin-top: 10px;">Extracting...</div>
+                <div class="spinner-glow"></div>
+                <div class="extracting-text">🔄 Extracting Card Details...</div>
             </div>
 
             <div class="result-section" id="resultSection"></div>
@@ -958,7 +974,7 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toastNotification" class="toast-notification">
+    <div id="toastNotification" class="position-fixed top-50 start-50 translate-middle p-3" style="z-index: 1055;">
         <span id="toastMessage"></span>
     </div>
 
