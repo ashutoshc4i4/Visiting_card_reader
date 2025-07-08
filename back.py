@@ -185,7 +185,7 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('user', None)
-    return redirect(url_for('login'))
+    return render_template('logout_redirect.html')
 
 @app.route('/')
 @login_required
