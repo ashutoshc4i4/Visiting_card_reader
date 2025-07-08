@@ -144,6 +144,13 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
+        <div id="resetToast" class="toast align-items-center text-bg-success border-0 mb-2" role="alert" style="display:none;">
+            <div class="d-flex">
+                <div class="toast-body">
+                    Password reset successfully! Please log in.
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 💳 Login Form -->
@@ -223,6 +230,28 @@
           }
         }, 2000);
       });
+
+      // Show reset toast if ?reset=1 in URL
+      if (window.location.search.includes('reset=1')) {
+        var resetToast = document.getElementById('resetToast');
+        if (resetToast) {
+          resetToast.style.display = 'block';
+          if (typeof bootstrap !== 'undefined') {
+            var toast = bootstrap.Toast.getOrCreateInstance(resetToast);
+            toast.show();
+          } else {
+            resetToast.classList.add('show');
+          }
+          setTimeout(function() {
+            if (typeof bootstrap !== 'undefined') {
+              var toast = bootstrap.Toast.getOrCreateInstance(resetToast);
+              toast.hide();
+            } else {
+              resetToast.classList.remove('show');
+            }
+          }, 2000);
+        }
+      }
     </script>
 </body>
 </html> 
