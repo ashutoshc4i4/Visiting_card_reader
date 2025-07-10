@@ -6,4 +6,7 @@ requests==2.31.0
 Werkzeug==2.3.7
 certifi
 python-dotenv
-gunicorn 
+gunicorn
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib 
