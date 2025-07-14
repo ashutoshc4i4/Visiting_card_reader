@@ -25,26 +25,21 @@ def append_to_master_sheet(card_data):
     try:
         gc = init_gsheet()
         sheet = gc.open("All_Visiting_Cards_Master").sheet1  # open master sheet
-        
-        # Handle uploaded_at field safely
-        uploaded_at = card_data.get("uploaded_at")
-        if uploaded_at:
-            formatted_date = uploaded_at.strftime("%Y-%m-%d %H:%M:%S")
-        else:
-            formatted_date = ""
-        
-        sheet.append_row([
-            card_data.get("name", ""),
-            card_data.get("company", ""),
-            card_data.get("designation", ""),
-            card_data.get("email", ""),
-            card_data.get("phone", ""),
-            card_data.get("address", ""),
-            card_data.get("website", ""),
-            card_data.get("additional_info", ""),
-            card_data.get("scanned_by", ""),
-            formatted_date
-        ])
+
+        # Handle uploaded_at field safely (not needed in new format)
+        # Map card_data to the required columns, using empty string if missing
+        row = [
+            card_data.get("name", ""),                    # Name
+            card_data.get("email", ""),                   # Email
+            card_data.get("company", ""),                 # Company/Institute
+            card_data.get("phone", ""),                   # Contact
+            card_data.get("address", ""),                 # Location
+            card_data.get("type", ""),                    # Type (may be missing)
+            card_data.get("designation", ""),             # Designation
+            card_data.get("website", ""),                 # Website
+            card_data.get("additional_info", "")           # Additional Info
+        ]
+        sheet.append_row(row)
         return True
     except Exception as e:
         print(f"Google Sheets Error: {e}")
