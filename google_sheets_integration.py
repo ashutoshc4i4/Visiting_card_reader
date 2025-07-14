@@ -26,7 +26,15 @@ def append_to_master_sheet(card_data):
         gc = init_gsheet()
         sheet = gc.open("All_Visiting_Cards_Master").sheet1  # open master sheet
 
-        # Handle uploaded_at field safely (not needed in new format)
+        # Ensure header row exists
+        header = [
+            "Name", "Email", "Company/Institute", "Contact", "Location",
+            "Type", "Designation", "Website", "Additional Info"
+        ]
+        existing_values = sheet.get_all_values()
+        if len(existing_values) == 0 or all(cell == "" for cell in sheet.row_values(1)):
+            sheet.insert_row(header, 1)
+
         # Map card_data to the required columns, using empty string if missing
         row = [
             card_data.get("name", ""),                    # Name
