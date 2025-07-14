@@ -1,11 +1,24 @@
+import os
 import gspread
 from google.oauth2.service_account import Credentials
+
+# Helper to get credentials path
+def get_google_creds_path():
+    creds_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+    if creds_json:
+        temp_path = '/tmp/google_creds.json'
+        with open(temp_path, 'w') as f:
+            f.write(creds_json)
+        return temp_path
+    else:
+        return 'visiting-card-reader-465216-4600e9621451.json'
 
 # Initialize Google Sheets
 def init_gsheet():
     scopes = ['https://www.googleapis.com/auth/spreadsheets',
               'https://www.googleapis.com/auth/drive']
-    creds = Credentials.from_service_account_file('visiting-card-reader-465216-4600e9621451.json', scopes=scopes)
+    creds_path = get_google_creds_path()
+    creds = Credentials.from_service_account_file(creds_path, scopes=scopes)
     return gspread.authorize(creds)
 
 def append_to_master_sheet(card_data):
