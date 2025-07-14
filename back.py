@@ -19,7 +19,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import certifi
 from dotenv import load_dotenv
-from google_sheets_integration import sheets_integration, ALLOWED_SHEET_USER
+from google_sheets_integration import append_to_master_sheet
 
 app = Flask(__name__)
 # Secure Flask secret key from environment
@@ -36,7 +36,7 @@ GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini
 
 # MongoDB configuration
 # MongoDB configuration
-MONGO_URI = 'mongodb+srv://ashutoshshrivastava:GvckKYjo2EQ8jCkJ@cluster0.vqa7ne9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+MONGO_URI = 'mongodb://localhost:27017/'
 DB_NAME = 'visiting_card'
 COLLECTION_NAME = 'cards'
 
@@ -65,43 +65,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 load_dotenv()
 
-GOOGLE_SHEETS_KEY_FILE = 'visiting-card-reader-465216-1554a8393478.json'
-GOOGLE_SHEET_ID = '1C2HQUijh7nSobcRw3ALuU55pUkHvmR20ad4yzWGgQc8'
-GOOGLE_SHEET_RANGE = 'Sheet1!A1'  # Adjust as needed
-ALLOWED_SHEET_USER = 'ashutosh.lab@c4i4.com'
 
-# Helper to write to Google Sheets
-# def write_to_google_sheets(card_data):
-#     try:
-#         print(f"[DEBUG] Attempting to write to Google Sheets for user: {card_data.get('scanned_by')}")
-#         scopes = [
-#             'https://www.googleapis.com/auth/spreadsheets',
-#             'https://www.googleapis.com/auth/drive'
-#         ]
-#         credentials = Credentials.from_service_account_file(GOOGLE_SHEETS_KEY_FILE, scopes=scopes)
-#         gc = gspread.authorize(credentials)
-#         sh = gc.open_by_key(GOOGLE_SHEET_ID)
-#         worksheet = sh.sheet1  # or use .worksheet('Sheet1') if named
-#         # Prepare row data (ensure order matches your sheet columns)
-#         row = [
-#             card_data.get('name', ''),
-#             card_data.get('company', ''),
-#             card_data.get('designation', ''),
-#             card_data.get('email', ''),
-#             card_data.get('phone', ''),
-#             card_data.get('website', ''),
-#             card_data.get('address', ''),
-#             card_data.get('additional_info', ''),
-#             str(card_data.get('uploaded_at', '')),
-#             card_data.get('original_filename', '')
-#         ]
-#         print(f"[DEBUG] Row to append: {row}")
-#         worksheet.append_row(row, value_input_option='USER_ENTERED')
-#         print("[DEBUG] Successfully wrote to Google Sheets.")
-#     except Exception as e:
-#         print(f"[ERROR] Failed to write to Google Sheets: {e}")
-#         import traceback
-#         traceback.print_exc()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -215,6 +179,8 @@ def login():
             user = get_user_by_employee_id(login_input)
         if user and bcrypt.check_password_hash(user['password'], password):
             session['user'] = user['email']
+            session['name'] = user.get('name', '')
+            session['show_welcome_modal'] = True
             session.permanent = False  # Ensure session cookie is not persistent
             return redirect(url_for('index'))
         else:
@@ -229,7 +195,14 @@ def logout():
 @app.route('/')
 @login_required
 def index():
-    return render_template('index.html')
+    name = session.get('name', '')
+    if name:
+        name = name.capitalize()
+    show_welcome_modal = session.pop('show_welcome_modal', False)
+    if 'just_logged_in' in session:
+        flash(f"Welcome, {name}!", "success")
+        session.pop('just_logged_in')
+    return render_template('index.html', name=name, show_welcome_modal=show_welcome_modal)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -265,34 +238,48 @@ def upload_file():
             extracted_data['scanned_by'] = session['user']
             extracted_data['shared'] = False
 
+            # Stricter duplicate check (by normalized email, phone, or name+company)
+            email = extracted_data.get('email', '').strip().lower()
+            phone = extracted_data.get('phone', '').strip()
+            name = extracted_data.get('name', '').strip().lower()
+            company = extracted_data.get('company', '').strip().lower()
+
+            duplicate_query = {'scanned_by': session['user']}
+            or_conditions = []
+
+            if email:
+                or_conditions.append({'email': email})
+            if phone:
+                or_conditions.append({'phone': phone})
+            if name and company:
+                or_conditions.append({'name': name, 'company': company})
+
+            if or_conditions:
+                duplicate_query['$or'] = or_conditions
+                duplicate = collection.find_one(duplicate_query)
+                if duplicate:
+                    os.remove(filepath)
+                    return jsonify({'success': False, 'error': 'Duplicate card detected. This card already exists.'}), 409
+
             # Check for extract_only mode
             extract_only = request.args.get('extract_only') == '1'
             if extract_only:
                 os.remove(filepath)
                 return jsonify({'success': True, 'data': extracted_data, 'message': 'Card details extracted. Confirm to save.'})
 
-            # Duplicate check (by email and phone)
-            email = extracted_data.get('email')
-            phone = extracted_data.get('phone')
-            if email or phone:
-                duplicate_query = {'scanned_by': session['user']}
-                if email:
-                    duplicate_query['email'] = email
-                if phone:
-                    duplicate_query['phone'] = phone
-                duplicate = collection.find_one(duplicate_query)
-                if duplicate:
-                    os.remove(filepath)
-                    return jsonify({'success': False, 'error': 'Duplicate card detected. This card already exists.'}), 409
-
             # Save to MongoDB
             result = collection.insert_one(extracted_data)
             extracted_data['_id'] = str(result.inserted_id)
             
-            # Google Sheets logic: only for allowed user
-            if session.get('user') == ALLOWED_SHEET_USER:
-                print(f"[DEBUG] Exporting to Google Sheets for user: {session.get('user')}")
-                sheets_integration.export_to_default_sheet(extracted_data)
+            # Only export to Google Sheets for ashutosh.lab@c4i4.com
+            user_email = session.get('user')
+            print("Current user for Google Sheets export:", user_email)
+            if user_email == 'ashutosh.lab@c4i4.com':
+                try:
+                    append_to_master_sheet(extracted_data)
+                    print("Successfully exported to Google Sheets (master)")
+                except Exception as e:
+                    print(f"Failed to export to Google Sheets (master): {e}")
             
             # Clean up uploaded file
             os.remove(filepath)
