@@ -758,35 +758,67 @@
 
         .web3-toast {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #1f1f1f;
-            color: #fff;
-            padding: 14px 18px;
-            border-radius: 12px;
-            font-family: 'Inter', sans-serif;
-            font-size: 15px;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 16px 22px;
+            box-shadow: 0 0 18px rgba(102,126,234,0.35);
+            z-index: 9999;
+            max-width: 300px;
+            width: max-content;
+            animation: slideIn 0.4s ease forwards;
+            font-family: 'Space Grotesk', sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+
+        .web3-toast-inner {
             display: flex;
             align-items: center;
             gap: 10px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.4s ease;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            z-index: 9999;
+            color: #fff;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 12px 16px;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(102,126,234,0.4);
+            position: relative;
         }
 
-        .web3-toast .icon {
+        .web3-toast-close {
+            background: transparent;
+            border: none;
+            color: #fff;
             font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: auto;
         }
 
-        .web3-toast.show {
-            opacity: 1;
-            transform: translateY(0);
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
+    <!-- Welcome Modal -->
+    <div class="modal fade" id="welcomeModal" tabindex="-1" aria-labelledby="welcomeModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="welcomeModalLabel">Welcome</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <span style="font-size:1.3em;">Welcome, <b id="welcomeName"></b>!</span>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-light shadow-sm mb-4">
       <div class="container-fluid">
@@ -1358,6 +1390,27 @@
             }
         });
 
+        function resetUploadUI() {
+            // Clear file input
+            var fileInput = document.getElementById('fileInput');
+            if (fileInput) fileInput.value = '';
+            // Hide captured image
+            var capturedImage = document.getElementById('capturedImage');
+            if (capturedImage) {
+                capturedImage.src = '';
+                capturedImage.style.display = 'none';
+            }
+            // Hide result section
+            var resultSection = document.getElementById('resultSection');
+            if (resultSection) {
+                resultSection.innerHTML = '';
+                resultSection.style.display = 'none';
+            }
+            // Reset upload button
+            var uploadBtn = document.getElementById('uploadBtn');
+            if (uploadBtn) uploadBtn.disabled = true;
+        }
+
         function resetCamera() {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
@@ -1732,7 +1785,7 @@
             }
         }
 
-        function showToast(message, icon = 'ℹ️') {
+        function showToast(message, icon = 'ℹ️', duration = 3500) {
             const toast = document.createElement('div');
             toast.className = 'web3-toast';
             toast.innerHTML = `<span class="icon">${icon}</span><span class="message">${message}</span>`;
@@ -1746,7 +1799,7 @@
             setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 300); // remove from DOM
-            }, 3500);
+            }, duration);
         }
 
         // Export functions for Personal Cards
@@ -1852,6 +1905,16 @@
             history.pushState(null, '', window.location.pathname);
         });
     </script>
+    <script>
+window.addEventListener('DOMContentLoaded', (event) => {
+  {% if show_welcome_modal %}
+    var name = "{{ name }}";
+    if (name) {
+      showToast("Welcome, " + name + "!", "👋", 4000);
+    }
+  {% endif %}
+});
+</script>
     <footer style="background: rgba(255,255,255,0.7); color: #000; text-align: center; padding: 18px 0; font-size: 1rem; font-weight: 500; box-shadow: 0 -2px 20px rgba(0,0,0,0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; margin-top: 40px;">
         © 2025 All Rights Reserved by C4i4
     </footer>
