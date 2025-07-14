@@ -36,7 +36,7 @@ GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini
 
 # MongoDB configuration
 # MongoDB configuration
-MONGO_URI = 'mongodb://localhost:27017/'
+MONGO_URI = 'mongodb+srv://ashutoshshrivastava:GvckKYjo2EQ8jCkJ@cluster0.vqa7ne9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 DB_NAME = 'visiting_card'
 COLLECTION_NAME = 'cards'
 
